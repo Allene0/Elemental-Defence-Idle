@@ -1,0 +1,32 @@
+.collector-menu {
+  background-image: linear-gradient(180deg, rgb(191, 204, 255) 0%, rgb(77, 211, 255) 69%, rgb(157, 252, 244) 89%) !important;
+  padding-top: 10px;
+}
+
+.collector-description {
+  text-align: left;
+  margin-left: 20px;
+}
+
+.collector-header {
+  display: block;
+  text-align: center;
+  margin-bottom: 10px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.collector-menu-button {
+  display: block;
+  margin: 5px auto;
+  text-align: center;
+}
+
+.log-box {
+  width: 400px;
+  height: 170px;
+  border: 1px solid black;
+  padding: 10px;
+  overflow-y: auto;
+  margin: 20px 0;
+}
