@@ -14,12 +14,17 @@ export function checkUnlocks({ gameStateRef, setGameState, addLogMessage }: Prop
     if(gameStateRef.current.buildings[0].amountOwned >= 8 && !gameStateRef.current.flags.unlockedLevel2Collector) {
         gameStateRef.current.buildings[1].available = true;
         gameStateRef.current.flags.unlockedLevel2Collector = true;
-        addLogMessage("You now understand that you could combine ten collectors into one that would be better than all ten put together.");
+        addLogMessage("You realise how you could combine ten collectors into a much better one");
     }
-    if(gameStateRef.current.totalEssenceCollected >= 1000 && !gameStateRef.current.flags.unlockedDefenses) {
+    if(gameStateRef.current.totalEssenceCollected >= 1200 && !gameStateRef.current.flags.unlockedDefences) {
         gameStateRef.current.buildings[2].available = true;
         gameStateRef.current.buildings[3].available = true;
-        gameStateRef.current.flags.unlockedDefenses = true;
-        addLogMessage("The elementals are getting closer. You need some defenses.");
+        gameStateRef.current.buildings[4].available = true;
+        gameStateRef.current.flags.unlockedDefences = true;
+        addLogMessage("The elementals are getting closer. You need some defences.");
+    }
+    if(gameStateRef.current.totalEssenceCollected >= 2500 && !gameStateRef.current.flags.elementalAttack) {
+        addLogMessage("The elementals are here.");
+        gameStateRef.current.flags.elementalAttack = true;
     }
 }

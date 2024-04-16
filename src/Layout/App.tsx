@@ -1,94 +1,28 @@
 import { useState, useEffect, useRef } from 'react';
 import { GameState } from '../Models/gameState';
-import { Building } from '../Models/building';
-import { GameFlags } from '../Models/gameFlags'
 import ShopPane from './ShopPane';
 import { Grid } from 'semantic-ui-react';
 import { checkUnlocks } from '../Scripts/checkUnlocks';
+import { buildingPriceIncrease, collectorCombinationCost, initialCombinedBuildingPriceIncrease, initialEssencePerClick, ticksPerSecond, initialBuildings, initialFlags, moveSpeed, distanceToWall, TYPE_WALL, TYPE_COLLECTOR, TYPE_DEFENCE } from '../Models/constants';
 
-//const collectorSpeedLvl1: number = 0.2;
-//const collectorSpeedLvl2: number = 10;
-//const collectorSpeedLvl3: number = 1000;
-//const collectorSpeedLvl4: number = 100000;
-//const initialCollectorCostLvl1: number = 10;
-//const initialCollectorCostLvl2: number = 100;
-const TYPE_COLLECTOR = 0;
-const TYPE_DEFENSE = 1;
-const WALL_ID = 100;
-const initialEssencePerClick: number = 1;
-const buildingPriceIncrease: number = 1.15; //15%
-const buildingPriceIncreaseEnhanced: number = 2; //Doubles
-const ticksPerSecond: number = 10;
-const collectorCombinationCost: number = 10;
-
-const initialBuildings: Building[] = [{
-  id: 1,
-  name: "Collector",
-  description: "A magical collector to gather essence for you",
-  available: true,
-  amountOwned: 0,
-  speed: 0.4,
-  initialCost: 10,
-  baseCost: 10,
-  currentCost: 10,
-  costsBuildingId: 0,
-  costsBuildingName: "",
-  type: TYPE_COLLECTOR
-}, {
-  id: 2,
-  name: "Great Collector",
-  description: "An upgraded collector that gathers even faster",
-  available: false,
-  amountOwned: 0,
-  speed: 10,
-  initialCost: 100,
-  baseCost: 100,
-  currentCost: 100,
-  costsBuildingId: 1,
-  costsBuildingName: "Collector",
-  type: TYPE_COLLECTOR
-}, {
-  id: 100,
-  name: "Wall",
-  description: "A wall to keep the elementals out",
-  available: false,
-  amountOwned: 1,
-  speed: 0,
-  initialCost: 100,
-  baseCost: 100,
-  currentCost: 100,
-  costsBuildingId: 0,
-  costsBuildingName: "",
-  type: TYPE_DEFENSE
-}, {
-  id: 101,
-  name: "Sniper Rifle",
-  description: "Nothing is holding it. It's just aiming and shooting by itself",
-  available: false,
-  amountOwned: 0,
-  speed: 0.2,
-  initialCost: 100,
-  baseCost: 100,
-  currentCost: 100,
-  costsBuildingId: 0,
-  costsBuildingName: "",
-  type: TYPE_DEFENSE
-}
-];
-const initialFlags: GameFlags = {
- initialMessage: false,
- unlockedLevel2Collector: false,
- unlockedDefenses: false
-}
+let tickCounter: number = 0;
 
 function App() {
   const [gameState, setGameState] = useState<GameState>({
-    essence: 500,
+    essence: 0,
     totalEssenceCollected: 0,
+    totalDamageDealt: 0,
     essencePerSecond: 0,
+    damagePerSecond: 0,
+    maxDamagePerSecond: 0,
     buildings: initialBuildings,
-    health: 500,
-    flags: initialFlags
+    wallHealth: 100,
+    flags: initialFlags,
+    combinedBuildingPriceIncrease: initialCombinedBuildingPriceIncrease,
+    elementals: {
+      ferocity: 100,
+      progress: 0
+    }
   });
   const [logMessages, setLogMessages] = useState<string[]>([]);
 
@@ -143,9 +77,9 @@ function App() {
             if (!updateDone) {
 
               selectedBuilding.amountOwned += 1;
-              selectedBuilding.currentCost *= buildingPriceIncreaseEnhanced;
+              selectedBuilding.currentCost *= prevState.combinedBuildingPriceIncrease;
               consumedBuilding.amountOwned -= collectorCombinationCost;
-              consumedBuilding.baseCost *= buildingPriceIncreaseEnhanced;
+              consumedBuilding.baseCost *= prevState.combinedBuildingPriceIncrease;
               consumedBuilding.currentCost = consumedBuilding.baseCost * Math.pow(buildingPriceIncrease, consumedBuilding.amountOwned);
               updateDone = true;
             }
@@ -156,13 +90,15 @@ function App() {
             };
           });
         }
-      } else {
+      } else { //No building consumed eg. Defence, Collector level 1
+        let newWallHealth = gameState.wallHealth;
         setGameState(prevState => {
-          const newEssence = prevState.essence - buildingEssenceCost; //Strict mode makes it execute twice so this makes sure the result is the same both times
+          const newEssence = prevState.essence - buildingEssenceCost; //Strict mode makes it execute twice so this makes sure the result is the same both times   
           if (!updateDone) {
-            if (selectedBuilding.id === WALL_ID) {
+            if (selectedBuilding.type === TYPE_WALL) {
               selectedBuilding.amountOwned *= 2;
               selectedBuilding.currentCost *= 2;
+              newWallHealth = selectedBuilding.amountOwned * 100; //TODO: Make this percentage based so it doesn't heal.
             } else {
               selectedBuilding.amountOwned += 1;
               selectedBuilding.currentCost *= buildingPriceIncrease;
@@ -173,6 +109,7 @@ function App() {
           return {
             ...prevState,
             essence: newEssence,
+            wallHealth: newWallHealth
           };
         });
       }
@@ -184,28 +121,85 @@ function App() {
   };
 
   function gameLoop() {
-    let essenceCollected: number = 0;
-    //TODO: Make this a loop
-    essenceCollected += gameStateRef.current.buildings[0].amountOwned * gameStateRef.current.buildings[0].speed / ticksPerSecond;
-    essenceCollected += gameStateRef.current.buildings[1].amountOwned * gameStateRef.current.buildings[1].speed / ticksPerSecond;
-    //Conditional unlocks
-    checkUnlocks({gameStateRef, setGameState, addLogMessage});
-    setGameState(prevState => ({
-      ...prevState,
-      essence: prevState.essence + essenceCollected,
-      totalEssenceCollected: prevState.totalEssenceCollected + essenceCollected,
-      essencePerSecond: essenceCollected * ticksPerSecond
-    }));
+    if (!gameStateRef.current.flags.dead) {
+      let essenceCollected: number = 0;
+
+      const collectorBuildings = gameStateRef.current.buildings.filter(building => building.type === TYPE_COLLECTOR);
+      for (const building of collectorBuildings) {
+        essenceCollected += building.amountOwned * building.speed / ticksPerSecond
+      }
+
+      //Make this an external function?
+      let damageDealt: number = 0;
+      let maxDamagePerSecond: number = 0;
+      const defenceBuildings = gameStateRef.current.buildings.filter(building => building.type === TYPE_DEFENCE);
+      for (const building of defenceBuildings) {
+        maxDamagePerSecond += building.amountOwned * building.speed
+      }
+      if (gameStateRef.current.flags.elementalAttack) {
+        damageDealt = maxDamagePerSecond / ticksPerSecond;
+
+        //Calculate progress of elementals
+        let elementalProgress: number = 0;
+        let healthAdded: number = gameStateRef.current.elementals.ferocity / 100 / ticksPerSecond;
+        let density: number = (healthAdded * moveSpeed) / distanceToWall; //health per distance unit
+        let inverseDensity: number = distanceToWall / (healthAdded * moveSpeed);// distance unit pushed back per damage done
+        elementalProgress = ((healthAdded - damageDealt) * inverseDensity) / ticksPerSecond;
+        gameStateRef.current.elementals.progress += elementalProgress;
+        if (gameStateRef.current.elementals.progress < 0) {
+          const excessDamage = Math.abs(gameStateRef.current.elementals.progress) * density * ticksPerSecond;
+          damageDealt -= excessDamage;
+          gameStateRef.current.elementals.progress = 0;
+        }
+        if (gameStateRef.current.elementals.progress > 900) {
+          gameStateRef.current.elementals.progress = 900;
+          gameStateRef.current.wallHealth -= gameStateRef.current.elementals.ferocity / 100 / ticksPerSecond;
+          if (gameStateRef.current.wallHealth <= 0) {
+            gameStateRef.current.wallHealth = 0;
+            gameStateRef.current.flags.dead = true;
+            addLogMessage("You died");
+          }
+        }
+
+        if (tickCounter % 10 === 0) {
+          if(gameStateRef.current.elementals.ferocity < 500) {
+          gameStateRef.current.elementals.ferocity += 1;
+          } else if (gameStateRef.current.elementals.ferocity >= 500 && gameStateRef.current.elementals.ferocity < 1000) {
+            gameStateRef.current.elementals.ferocity *= 1.003;
+          } else {
+            gameStateRef.current.elementals.ferocity *= 1.005;
+          }
+          
+        }
+
+      }
+      //Conditional unlocks
+      checkUnlocks({ gameStateRef, setGameState, addLogMessage });
+      setGameState(prevState => ({
+        ...prevState,
+        essence: prevState.essence + essenceCollected,
+        totalEssenceCollected: prevState.totalEssenceCollected + essenceCollected,
+        totalDamageDealt: prevState.totalDamageDealt + damageDealt,
+        essencePerSecond: essenceCollected * ticksPerSecond,
+        damagePerSecond: damageDealt * ticksPerSecond,
+        maxDamagePerSecond: maxDamagePerSecond
+      }));
+
+      tickCounter += 1;
+      if (tickCounter === 600) {
+        tickCounter = 0;
+      }
+    }
   }
 
   return (
     <Grid>
-      <Grid.Column width={4} padded="true">
+      <Grid.Column width={4}>
         <ShopPane gameState={gameState} buyBuilding={buyBuilding} />
       </Grid.Column>
-      <Grid.Column width={12}>
+      <Grid.Column width={8}>
         <Grid.Row>
-          <h1>Elemental Defense Idle</h1>
+          <h1>Elemental Defence Idle</h1>
           <p>Essence: {gameState.essence.toFixed(1)}</p>
           <p>Essence per second: {gameState.essencePerSecond.toFixed(1)}</p>
           <button onClick={mineEssence}>Mine Essence</button>
@@ -218,8 +212,16 @@ function App() {
           </div>
         </Grid.Row>
         <Grid.Row>
-          <p>This will be the graphical area</p>
+          <p>Wall Health: {gameState.wallHealth.toFixed(1)}</p>
+          <p>Damage Per Second : {gameState.damagePerSecond.toFixed(1)} (Max {gameState.maxDamagePerSecond.toFixed(1)})</p>
+          <p>Elemental Progress: {gameState.elementals.progress.toFixed(0)} / {distanceToWall}</p>
+          <p>Elemental Ferocity: {gameState.elementals.ferocity.toFixed(2)}</p>
         </Grid.Row>
+      </Grid.Column>
+      <Grid.Column width={4}>
+        <h1></h1>
+        <p>Total essence collected: {gameState.totalEssenceCollected.toFixed(0)}</p>
+        <p>Total damage dealt: {gameState.totalDamageDealt.toFixed(0)}</p>
       </Grid.Column>
     </Grid>
   );

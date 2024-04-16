@@ -1,11 +1,7 @@
-import { Button, Grid, GridRow, Item, Menu } from 'semantic-ui-react';
+import { Button, Grid} from 'semantic-ui-react';
 import { GameState } from '../Models/gameState';
-import { Building } from '../Models/building';
-
-const collectorCombinationCost: number = 10;
-const TYPE_COLLECTOR = 0;
-const TYPE_DEFENSE = 1;
-const WALL_ID = 100;
+//import { Building } from '../Models/building';
+import {TYPE_COLLECTOR, collectorCombinationCost, TYPE_DEFENCE, TYPE_WALL} from "../Models/constants";
 
 interface Props {
     gameState: GameState;
@@ -24,12 +20,10 @@ export default function NavBar({ gameState, buyBuilding }: Props) {
                             <div className="collector-header">{building.name}</div>
                             <div className="collector-description">{building.description}</div>
     
-                            {building.type === TYPE_DEFENSE && (
-                                building.id !== WALL_ID && (
-                                    <div className="collector-description">
-                                        Kills {building.speed} elementals per second
-                                    </div>
-                                )
+                            {building.type === TYPE_DEFENCE && (
+                                <div className="collector-description">
+                                    Deals {building.speed} damage per second
+                                </div>
                             )}
     
                             {building.type === TYPE_COLLECTOR && (
@@ -38,7 +32,7 @@ export default function NavBar({ gameState, buyBuilding }: Props) {
                                 </div>
                             )}
 
-                            {building.id === WALL_ID ? (
+                            {building.type === TYPE_WALL ? (
                                 <div className="collector-description">Health: {building.amountOwned * 100}</div>
                             ) : (
                                 <div className="collector-description">Owned: {building.amountOwned}</div>
