@@ -1,7 +1,7 @@
 {
   "name": "elemental-defence-idle",
   "private": true,
-  "version": "0.1",
+  "version": "0.1.5",
   "homepage": "https://allene0.github.io/Elemental-Defence-Idle",
   "type": "module",
   "scripts": {

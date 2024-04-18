@@ -1,4 +1,5 @@
 {
+  /*Config*/
   "compilerOptions": {
     "composite": true,
     "skipLibCheck": true,
