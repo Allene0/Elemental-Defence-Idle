@@ -1,9 +1,12 @@
 {
-  "name": "elemental-defense-idle",
+  "name": "elemental-defence-idle",
   "private": true,
   "version": "0.1",
+  "homepage": "https://allene0.github.io/elemental-defence-idle",
   "type": "module",
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist",
     "start": "vite",
     "dev": "vite",
     "build": "tsc && vite build",
@@ -11,6 +14,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "gh-pages": "^6.1.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "semantic-ui-css": "^2.5.0",

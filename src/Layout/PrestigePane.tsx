@@ -1,4 +1,4 @@
-import { Button, Grid} from 'semantic-ui-react';
+/*import { Button, Grid} from 'semantic-ui-react';
 import { GameState } from '../Models/gameState';
 import {TYPE_COLLECTOR, collectorCombinationCost, TYPE_DEFENCE, TYPE_WALL} from "../Models/constants";
 
@@ -19,4 +19,4 @@ export default function NavBar({ gameState, buyPerk }: Props) {
             })}
         </Grid>
     )
-}
+}*/

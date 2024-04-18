@@ -5,7 +5,7 @@ import { Grid } from 'semantic-ui-react';
 import { checkUnlocks } from '../Scripts/checkUnlocks';
 //import { Perk } from "../Models/perk";
 //import { Building } from "../Models/building";
-import { buildingPriceIncrease, collectorCombinationCost, initialCombinedBuildingPriceIncrease, initialEssencePerClick, ticksPerSecond, initialBuildings, initialFlags, moveSpeed, distanceToWall, TYPE_WALL, TYPE_COLLECTOR, TYPE_DEFENCE, initialPrestige, perkDefinitions } from '../Models/constants';
+import { buildingPriceIncrease, collectorCombinationCost, initialCombinedBuildingPriceIncrease, initialEssencePerClick, ticksPerSecond, initialBuildings, initialFlags, moveSpeed, distanceToWall, TYPE_WALL, TYPE_COLLECTOR, TYPE_DEFENCE, initialPrestige} from '../Models/constants';
 
 let tickCounter: number = 0;
 let gameLoaded: boolean = false;
