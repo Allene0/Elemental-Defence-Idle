@@ -1,6 +1,7 @@
 An incremental game with a base defense game element. Made with React/ Typescript as a learning exercise.
 
-To do:
+    To do:
+
     Graphical representation of the elemental's attack
     
     More collectors/ defences
