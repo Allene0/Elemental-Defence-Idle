@@ -3,9 +3,14 @@ import { GameState } from '../Models/gameState';
 import ShopPane from './ShopPane';
 import { Grid } from 'semantic-ui-react';
 import { checkUnlocks } from '../Scripts/checkUnlocks';
-import { buildingPriceIncrease, collectorCombinationCost, initialCombinedBuildingPriceIncrease, initialEssencePerClick, ticksPerSecond, initialBuildings, initialFlags, moveSpeed, distanceToWall, TYPE_WALL, TYPE_COLLECTOR, TYPE_DEFENCE } from '../Models/constants';
+//import { Perk } from "../Models/perk";
+//import { Building } from "../Models/building";
+import { buildingPriceIncrease, collectorCombinationCost, initialCombinedBuildingPriceIncrease, initialEssencePerClick, ticksPerSecond, initialBuildings, initialFlags, moveSpeed, distanceToWall, TYPE_WALL, TYPE_COLLECTOR, TYPE_DEFENCE, initialPrestige, perkDefinitions } from '../Models/constants';
 
 let tickCounter: number = 0;
+let gameLoaded: boolean = false;
+
+//const buildingDefinitions: Building[] | null = null;
 
 function App() {
   const [gameState, setGameState] = useState<GameState>({
@@ -19,6 +24,8 @@ function App() {
     wallHealth: 100,
     flags: initialFlags,
     combinedBuildingPriceIncrease: initialCombinedBuildingPriceIncrease,
+    prestige: initialPrestige,
+    essensePerClick: initialEssencePerClick,
     elementals: {
       ferocity: 100,
       progress: 0
@@ -37,6 +44,23 @@ function App() {
       logBoxRef.current.scrollTop = logBoxRef.current.scrollHeight;
     }
   }, [logMessages]);
+
+  const loadGame = () => {
+    let saveGame = localStorage.getItem("elementalDefenceSave");
+    if (saveGame !== null && saveGame !== "") {
+      let gameData: GameState = JSON.parse(saveGame);
+      if (gameData !== null) {
+        setGameState(gameData);
+      }
+    }
+  };
+  
+  useEffect(() => {
+    const loadGameAndSetup = () => {
+      loadGame();
+    };
+    loadGameAndSetup();
+  }, []);
 
   const intervalRef = useRef<number | null>(null);
   useEffect(() => {
@@ -121,6 +145,10 @@ function App() {
   };
 
   function gameLoop() {
+    if (!gameLoaded) {
+      loadGame();
+      gameLoaded = true;
+    }
     if (!gameStateRef.current.flags.dead) {
       let essenceCollected: number = 0;
 
@@ -157,24 +185,24 @@ function App() {
           if (gameStateRef.current.wallHealth <= 0) {
             gameStateRef.current.wallHealth = 0;
             gameStateRef.current.flags.dead = true;
-            addLogMessage("You died");
+            addLogMessage("You died. Prestige system coming soon, thank you for playing the development version! Delete your save to try again.");
           }
         }
 
         if (tickCounter % 10 === 0) {
-          if(gameStateRef.current.elementals.ferocity < 500) {
-          gameStateRef.current.elementals.ferocity += 1;
+          if (gameStateRef.current.elementals.ferocity < 500) {
+            gameStateRef.current.elementals.ferocity += 1;
           } else if (gameStateRef.current.elementals.ferocity >= 500 && gameStateRef.current.elementals.ferocity < 1000) {
             gameStateRef.current.elementals.ferocity *= 1.003;
           } else {
             gameStateRef.current.elementals.ferocity *= 1.005;
           }
-          
+
         }
 
       }
       //Conditional unlocks
-      checkUnlocks({ gameStateRef, setGameState, addLogMessage });
+      checkUnlocks({ gameStateRef, addLogMessage, gameLoaded});
       setGameState(prevState => ({
         ...prevState,
         essence: prevState.essence + essenceCollected,
@@ -192,6 +220,16 @@ function App() {
     }
   }
 
+  function saveGame() {
+    localStorage.setItem("elementalDefenceSave", JSON.stringify(gameState));
+    addLogMessage("Game Saved");
+  }
+
+  function deleteSave() {
+    localStorage.setItem("elementalDefenceSave", "");
+    addLogMessage("Game Deleted");
+  }
+
   return (
     <Grid>
       <Grid.Column width={4}>
@@ -200,7 +238,7 @@ function App() {
       <Grid.Column width={8}>
         <Grid.Row>
           <h1>Elemental Defence Idle</h1>
-          <p>Essence: {gameState.essence.toFixed(1)}</p>
+          <p>Essence: {gameState.essence.toFixed(0)}</p>
           <p>Essence per second: {gameState.essencePerSecond.toFixed(1)}</p>
           <button onClick={mineEssence}>Mine Essence</button>
         </Grid.Row>
@@ -220,6 +258,9 @@ function App() {
       </Grid.Column>
       <Grid.Column width={4}>
         <h1></h1>
+        <button onClick={saveGame}>Save Game</button>
+        <span> </span>
+        <button onClick={deleteSave}>Delete Save</button>
         <p>Total essence collected: {gameState.totalEssenceCollected.toFixed(0)}</p>
         <p>Total damage dealt: {gameState.totalDamageDealt.toFixed(0)}</p>
       </Grid.Column>

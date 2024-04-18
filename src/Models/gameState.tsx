@@ -1,6 +1,7 @@
 import { Building } from "./building";
 import { Elementals } from "./elementals";
 import { GameFlags } from "./gameFlags";
+import { Prestige } from "./prestige";
 
 export interface GameState {
     essence: number;
@@ -13,5 +14,7 @@ export interface GameState {
     buildings: Building[];
     flags: GameFlags;
     elementals: Elementals;
+    prestige: Prestige;
     combinedBuildingPriceIncrease: number;
+    essensePerClick: number;
 }

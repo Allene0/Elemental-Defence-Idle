@@ -1,8 +1,8 @@
-An incremental game with a base defense game element.
+An incremental game with a base defense game element. Made with React/ Typescript as a learning exercise.
 
 To do:
     Graphical representation of the elemental's attack
-    Level 3 collector
+    More collectors/ defences
     Prestige system based on damage dealt in a run
     Bosses every 10 minutes
-    Save game
+    Decouple building definitions from game state so saved games carry across versions
