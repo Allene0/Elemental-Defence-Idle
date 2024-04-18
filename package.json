@@ -2,7 +2,7 @@
   "name": "elemental-defence-idle",
   "private": true,
   "version": "0.1",
-  "homepage": "https://allene0.github.io/elemental-defence-idle",
+  "homepage": "https://allene0.github.io/Elemental-Defence-Idle",
   "type": "module",
   "scripts": {
     "predeploy": "npm run build",
